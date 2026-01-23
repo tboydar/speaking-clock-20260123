@@ -15,7 +15,13 @@ import '../styles/global.css';
   <body>
     <div id="app">
       <header>
-        <h1>⏰ Speaking Clock</h1>
+        <div class="logo-container">
+          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12,6 12,12 16,14"/>
+          </svg>
+          <h1>Speaking Clock</h1>
+        </div>
         <p class="subtitle">會說話的時鐘</p>
       </header>
 
@@ -25,12 +31,26 @@ import '../styles/global.css';
           <div id="period" class="period">AM</div>
         </section>
 
+        <!-- Motivational Quote -->
+        <section class="quote-section">
+          <p id="quote" class="quote">每一天都是新的開始</p>
+        </section>
+
         <section class="controls">
           <button id="speak-btn" class="btn btn-primary" aria-label="播報時間">
-            🔊 播報時間
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11,5 6,9 2,9 2,15 6,15 11,19 11,5"/>
+              <path d="M15.54,8.46a5,5,0,0,1,0,7.07"/>
+              <path d="M19.07,4.93a10,10,0,0,1,0,14.14"/>
+            </svg>
+            播報時間
           </button>
           <button id="settings-btn" class="btn btn-secondary" aria-label="設定">
-            ⚙️ 設定
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M19.4,15a1.65,1.65,0,0,0,.33,1.82l.06.06a2,2,0,0,1,0,2.83,2,2,0,0,1-2.83,0l-.06-.06a1.65,1.65,0,0,0-1.82-.33,1.65,1.65,0,0,0-1,1.51V21a2,2,0,0,1-4,0v-.09A1.65,1.65,0,0,0,9,19.4a1.65,1.65,0,0,0-1.82.33l-.06.06a2,2,0,0,1-2.83,0,2,2,0,0,1,0-2.83l.06-.06a1.65,1.65,0,0,0,.33-1.82,1.65,1.65,0,0,0-1.51-1H3a2,2,0,0,1,0-4h.09A1.65,1.65,0,0,0,4.6,9a1.65,1.65,0,0,0-.33-1.82l-.06-.06a2,2,0,0,1,0-2.83,2,2,0,0,1,2.83,0l.06.06a1.65,1.65,0,0,0,1.82.33H9a1.65,1.65,0,0,0,1-1.51V3a2,2,0,0,1,4,0v.09a1.65,1.65,0,0,0,1,1.51,1.65,1.65,0,0,0,1.82-.33l.06-.06a2,2,0,0,1,2.83,0,2,2,0,0,1,0,2.83l-.06.06a1.65,1.65,0,0,0-.33,1.82V9a1.65,1.65,0,0,0,1.51,1H21a2,2,0,0,1,0,4h-.09a1.65,1.65,0,0,0-1.51,1Z"/>
+            </svg>
+            設定
           </button>
         </section>
 
@@ -42,7 +62,13 @@ import '../styles/global.css';
         <!-- Todo Reminders Section -->
         <section class="todo-section">
           <div class="todo-header">
-            <h2>⏰ 待辦提醒</h2>
+            <h2>
+              <svg class="todo-header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18,8A6,6,0,0,0,6,8c0,7-3,9-3,9H21s-3-2-3-9"/>
+                <path d="M13.73,21a2,2,0,0,1-3.46,0"/>
+              </svg>
+              待辦提醒
+            </h2>
             <p class="todo-subtitle">設定時間，到點會語音提醒直到關閉</p>
           </div>
 
@@ -60,7 +86,10 @@ import '../styles/global.css';
               maxlength="100"
             />
             <button id="add-todo-btn" class="btn-add-todo" aria-label="新增提醒">
-              <span>+</span>
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
             </button>
           </div>
 
@@ -71,7 +100,10 @@ import '../styles/global.css';
           <!-- Active reminder alert -->
           <div id="reminder-alert" class="reminder-alert hidden">
             <div class="reminder-alert-content">
-              <span class="reminder-alert-icon">🔔</span>
+              <svg class="reminder-alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18,8A6,6,0,0,0,6,8c0,7-3,9-3,9H21s-3-2-3-9"/>
+                <path d="M13.73,21a2,2,0,0,1-3.46,0"/>
+              </svg>
               <span id="reminder-alert-text">提醒內容</span>
             </div>
             <button id="dismiss-reminder-btn" class="btn btn-primary">關閉提醒</button>
@@ -105,17 +137,151 @@ import '../styles/global.css';
               啟用語音報時
             </label>
           </div>
+          <div class="setting-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="healing-enabled" />
+              荷歐波諾波諾語錄（每分鐘朗讀）
+            </label>
+            <p class="setting-hint">開啟後每分鐘隨機朗讀一句療癒語錄</p>
+          </div>
           <button id="save-settings" class="btn btn-primary">儲存設定</button>
         </section>
       </main>
 
       <footer>
         <p>採用 Clean Architecture + TDD 開發 | Powered by Astro</p>
-        <p class="version">v20260123.3</p>
+        <p class="version">v20260123.4</p>
       </footer>
     </div>
 
     <script>
+      // ============================================================
+      // MOTIVATIONAL QUOTES - 120 激勵人心的話
+      // ============================================================
+
+      const MOTIVATIONAL_QUOTES = [
+        "每一天都是新的開始",
+        "相信自己，你比想像中更強大",
+        "成功來自於不放棄的堅持",
+        "今天的努力是明天的收穫",
+        "困難是成長的階梯",
+        "夢想不會逃跑，逃跑的是自己",
+        "行動是治癒恐懼的良藥",
+        "每一次失敗都是成功的墊腳石",
+        "你的態度決定你的高度",
+        "現在開始，永遠不嫌晚",
+        "把握當下，創造未來",
+        "勇氣不是沒有恐懼，而是戰勝恐懼",
+        "成功的秘訣是開始行動",
+        "你是自己命運的主人",
+        "每一步都算數，繼續前進",
+        "改變從今天開始",
+        "你的潛力是無限的",
+        "專注於解決方案，而非問題",
+        "今天比昨天更好就是進步",
+        "堅持到底就是勝利",
+        "相信過程，結果會來",
+        "你的努力不會白費",
+        "每一天都值得期待",
+        "挑戰讓你變得更強",
+        "保持積極，好事會發生",
+        "你值得擁有最好的",
+        "勇敢追求你的夢想",
+        "失敗是成功之母",
+        "專注當下，放眼未來",
+        "你的熱情是最強大的力量",
+        "不要害怕犯錯，害怕不去嘗試",
+        "每一個專家都曾是初學者",
+        "你的獨特是你的優勢",
+        "堅強不是天生的，是練出來的",
+        "相信奇蹟，創造奇蹟",
+        "成功需要時間，保持耐心",
+        "你比困難更強大",
+        "每一次呼吸都是重新開始的機會",
+        "讓今天成為改變的起點",
+        "你的笑容是最好的名片",
+        "困境是暫時的，成長是永恆的",
+        "做最好的自己",
+        "你的故事還沒寫完",
+        "勇敢說出你的想法",
+        "每一天都是禮物",
+        "你值得被愛和尊重",
+        "成功是習慣的累積",
+        "保持好奇心，持續學習",
+        "你的努力會被看見",
+        "今天的小步驟，明天的大跨越",
+        "相信自己的直覺",
+        "你有能力克服一切",
+        "保持希望，奇蹟會發生",
+        "你的堅持會帶來改變",
+        "每一個問題都有解決方案",
+        "你的夢想值得追求",
+        "勇氣是做對的事",
+        "成功從自律開始",
+        "你的態度是可以選擇的",
+        "今天就是最好的一天",
+        "相信你的能力",
+        "每一次嘗試都是學習",
+        "你的價值不取決於他人",
+        "堅持夢想，永不放棄",
+        "你比你想的更勇敢",
+        "成功需要犧牲和努力",
+        "保持感恩的心",
+        "你的存在就是奇蹟",
+        "做自己的英雄",
+        "每一天都是冒險",
+        "你的熱情會感染他人",
+        "失敗只是暫時的休息",
+        "相信美好即將發生",
+        "你有改變世界的力量",
+        "今天的選擇決定明天",
+        "保持謙虛，持續進步",
+        "你的聲音很重要",
+        "勇敢面對未知",
+        "成功是選擇的結果",
+        "你值得幸福快樂",
+        "每一個人都有獨特的價值",
+        "堅持就是最大的才華",
+        "你的未來充滿可能",
+        "保持正向思維",
+        "相信自己的選擇",
+        "你可以成為任何你想成為的人",
+        "今天的辛苦是明天的甜蜜",
+        "勇敢接受挑戰",
+        "成功沒有捷徑",
+        "你的努力正在累積",
+        "保持熱情，追求卓越",
+        "每一個日出都是新希望",
+        "你有無限的創造力",
+        "相信時間的力量",
+        "堅強是最美的姿態",
+        "你的人生你做主",
+        "今天的行動創造未來",
+        "保持好心情，好事會來",
+        "你是獨一無二的存在",
+        "勇敢走出舒適圈",
+        "成功來自於不斷嘗試",
+        "你的善良是你的力量",
+        "每一天都在進步",
+        "相信自己的價值",
+        "堅持初心，方得始終",
+        "你比昨天更優秀",
+        "保持學習的心態",
+        "今天就開始行動",
+        "你的夢想會實現",
+        "勇氣讓你與眾不同",
+        "成功屬於堅持的人",
+        "你值得所有美好",
+        "每一刻都是珍貴的",
+        "相信努力會有回報",
+        "堅定信念，勇往直前",
+        "你的光芒無法被遮蔽",
+        "保持真實的自己",
+        "今天的你最棒",
+        "勇敢追求想要的生活",
+        "成功就在前方等你"
+      ];
+
       // ============================================================
       // DOMAIN LAYER - Entities (型別定義，JSDoc 形式)
       // ============================================================
@@ -242,6 +408,7 @@ import '../styles/global.css';
         voiceVolume: 1,
         announceInterval: 30,
         isEnabled: true,
+        healingEnabled: false,
       };
 
       // ============================================================
@@ -358,6 +525,25 @@ import '../styles/global.css';
       }
 
       // ============================================================
+      // SVG Icon Templates
+      // ============================================================
+
+      const ICONS = {
+        bell: `<svg class="todo-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18,8A6,6,0,0,0,6,8c0,7-3,9-3,9H21s-3-2-3-9"/>
+          <path d="M13.73,21a2,2,0,0,1-3.46,0"/>
+        </svg>`,
+        edit: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11,4H4A2,2,0,0,0,2,6V20a2,2,0,0,0,2,2H18a2,2,0,0,0,2-2V13"/>
+          <path d="M18.5,2.5a2.121,2.121,0,0,1,3,3L12,15,8,16l1-4Z"/>
+        </svg>`,
+        trash: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3,6 5,6 21,6"/>
+          <path d="M19,6V20a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6M8,6V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"/>
+        </svg>`
+      };
+
+      // ============================================================
       // PRESENTATION LAYER - UI Logic
       // ============================================================
 
@@ -385,11 +571,20 @@ import '../styles/global.css';
           this.voiceVolumeValue = document.getElementById('voice-volume-value');
           this.announceIntervalInput = document.getElementById('announce-interval');
           this.enabledCheckbox = document.getElementById('enabled');
+          this.healingEnabledCheckbox = document.getElementById('healing-enabled');
 
           this.timer = null;
           this.autoAnnounceTimer = null;
           this.reminderCheckTimer = null;
           this.activeReminderTimer = null;
+          this.quoteTimer = null;
+          this.healingTimer = null;
+
+          // Quote element
+          this.quoteEl = document.getElementById('quote');
+
+          // Healing quotes data
+          this.healingQuotes = null;
 
           // Auto-announce status elements
           this.statusEl = document.getElementById('auto-announce-status');
@@ -426,6 +621,74 @@ import '../styles/global.css';
           this.renderReminders();
           this.setupReminderListeners();
           this.startReminderChecker();
+
+          // Start quote rotation
+          this.startQuoteRotation();
+
+          // Start healing quotes if enabled
+          this.startHealingQuotes(settings);
+        }
+
+        startQuoteRotation() {
+          const updateQuote = () => {
+            const randomIndex = Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length);
+            this.quoteEl.textContent = MOTIVATIONAL_QUOTES[randomIndex];
+          };
+
+          // Show first quote immediately
+          updateQuote();
+
+          // Change quote every second
+          this.quoteTimer = setInterval(updateQuote, 1000);
+        }
+
+        async startHealingQuotes(settings) {
+          // Clear existing timer
+          if (this.healingTimer) {
+            clearInterval(this.healingTimer);
+            this.healingTimer = null;
+          }
+
+          // Return early if healing quotes is disabled
+          if (!settings.healingEnabled) {
+            return;
+          }
+
+          // Load healing quotes if not already loaded
+          if (!this.healingQuotes) {
+            try {
+              const basePath = import.meta.env.BASE_URL || '/';
+              const response = await fetch(`${basePath}healing-quotes.json`);
+              this.healingQuotes = await response.json();
+            } catch (error) {
+              console.error('Failed to load healing quotes:', error);
+              return;
+            }
+          }
+
+          // Speak a random healing quote
+          const speakRandomHealingQuote = async () => {
+            const categories = Object.keys(this.healingQuotes);
+            const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+            const quotes = this.healingQuotes[randomCategory];
+            const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+
+            // Get current settings for voice
+            const currentSettings = await this.settingsRepo.getSettings();
+
+            // Speak the quote
+            const utterance = new SpeechSynthesisUtterance(randomQuote);
+            utterance.lang = currentSettings.language;
+            utterance.rate = currentSettings.voiceRate;
+            utterance.volume = currentSettings.voiceVolume;
+            speechSynthesis.speak(utterance);
+          };
+
+          // Speak first quote immediately
+          await speakRandomHealingQuote();
+
+          // Then speak every minute
+          this.healingTimer = setInterval(speakRandomHealingQuote, 60 * 1000);
         }
 
         startAutoAnnounce(settings) {
@@ -494,6 +757,9 @@ import '../styles/global.css';
             // Restart auto-announce with new settings
             this.startAutoAnnounce(settings);
 
+            // Restart healing quotes with new settings
+            this.startHealingQuotes(settings);
+
             // Show feedback
             this.saveSettingsBtn.textContent = '已儲存！';
             setTimeout(() => {
@@ -520,6 +786,7 @@ import '../styles/global.css';
           this.voiceVolumeValue.textContent = settings.voiceVolume.toString();
           this.announceIntervalInput.value = settings.announceInterval.toString();
           this.enabledCheckbox.checked = settings.isEnabled;
+          this.healingEnabledCheckbox.checked = settings.healingEnabled || false;
         }
 
         getSettingsFromUI() {
@@ -529,6 +796,7 @@ import '../styles/global.css';
             voiceVolume: parseFloat(this.voiceVolumeInput.value),
             announceInterval: parseInt(this.announceIntervalInput.value),
             isEnabled: this.enabledCheckbox.checked,
+            healingEnabled: this.healingEnabledCheckbox.checked,
           };
         }
 
@@ -626,7 +894,31 @@ import '../styles/global.css';
             if (reminder.isRinging) {
               const badge = document.createElement('span');
               badge.className = 'todo-badge';
-              badge.textContent = '🔔 響鈴中';
+
+              // Create SVG element properly
+              const svgNS = 'http://www.w3.org/2000/svg';
+              const svg = document.createElementNS(svgNS, 'svg');
+              svg.setAttribute('class', 'todo-badge-icon');
+              svg.setAttribute('viewBox', '0 0 24 24');
+              svg.setAttribute('fill', 'none');
+              svg.setAttribute('stroke', 'currentColor');
+              svg.setAttribute('stroke-width', '2');
+              svg.setAttribute('stroke-linecap', 'round');
+              svg.setAttribute('stroke-linejoin', 'round');
+
+              const path1 = document.createElementNS(svgNS, 'path');
+              path1.setAttribute('d', 'M18,8A6,6,0,0,0,6,8c0,7-3,9-3,9H21s-3-2-3-9');
+              svg.appendChild(path1);
+
+              const path2 = document.createElementNS(svgNS, 'path');
+              path2.setAttribute('d', 'M13.73,21a2,2,0,0,1-3.46,0');
+              svg.appendChild(path2);
+
+              badge.appendChild(svg);
+
+              const badgeText = document.createTextNode(' 響鈴中');
+              badge.appendChild(badgeText);
+
               li.appendChild(badge);
             }
 
@@ -637,14 +929,51 @@ import '../styles/global.css';
             const editBtn = document.createElement('button');
             editBtn.className = 'todo-action-btn edit';
             editBtn.setAttribute('aria-label', '編輯');
-            editBtn.textContent = '✏️';
+
+            // Create edit SVG
+            const svgNS = 'http://www.w3.org/2000/svg';
+            const editSvg = document.createElementNS(svgNS, 'svg');
+            editSvg.setAttribute('viewBox', '0 0 24 24');
+            editSvg.setAttribute('fill', 'none');
+            editSvg.setAttribute('stroke', 'currentColor');
+            editSvg.setAttribute('stroke-width', '2');
+            editSvg.setAttribute('stroke-linecap', 'round');
+            editSvg.setAttribute('stroke-linejoin', 'round');
+
+            const editPath1 = document.createElementNS(svgNS, 'path');
+            editPath1.setAttribute('d', 'M11,4H4A2,2,0,0,0,2,6V20a2,2,0,0,0,2,2H18a2,2,0,0,0,2-2V13');
+            editSvg.appendChild(editPath1);
+
+            const editPath2 = document.createElementNS(svgNS, 'path');
+            editPath2.setAttribute('d', 'M18.5,2.5a2.121,2.121,0,0,1,3,3L12,15,8,16l1-4Z');
+            editSvg.appendChild(editPath2);
+
+            editBtn.appendChild(editSvg);
             editBtn.addEventListener('click', () => this.editReminder(reminder.id));
             actions.appendChild(editBtn);
 
             const deleteBtn = document.createElement('button');
             deleteBtn.className = 'todo-action-btn delete';
             deleteBtn.setAttribute('aria-label', '刪除');
-            deleteBtn.textContent = '🗑️';
+
+            // Create delete SVG
+            const deleteSvg = document.createElementNS(svgNS, 'svg');
+            deleteSvg.setAttribute('viewBox', '0 0 24 24');
+            deleteSvg.setAttribute('fill', 'none');
+            deleteSvg.setAttribute('stroke', 'currentColor');
+            deleteSvg.setAttribute('stroke-width', '2');
+            deleteSvg.setAttribute('stroke-linecap', 'round');
+            deleteSvg.setAttribute('stroke-linejoin', 'round');
+
+            const deleteLine = document.createElementNS(svgNS, 'polyline');
+            deleteLine.setAttribute('points', '3,6 5,6 21,6');
+            deleteSvg.appendChild(deleteLine);
+
+            const deletePath = document.createElementNS(svgNS, 'path');
+            deletePath.setAttribute('d', 'M19,6V20a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6M8,6V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6');
+            deleteSvg.appendChild(deletePath);
+
+            deleteBtn.appendChild(deleteSvg);
             deleteBtn.addEventListener('click', () => {
               if (this.currentRingingReminder?.id === reminder.id) {
                 this.stopActiveReminder();

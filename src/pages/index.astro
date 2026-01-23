@@ -754,6 +754,9 @@ import '../styles/global.css';
             await this.settingsRepo.saveSettings(settings);
             this.settingsPanel.classList.add('hidden');
 
+            // Scroll to top to show main content
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
             // Restart auto-announce with new settings
             this.startAutoAnnounce(settings);
 

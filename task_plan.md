@@ -4,7 +4,7 @@
 開發一個純網頁前端的語音報時 PWA 工具，採用 TDD 開發流程，參考 Kos Huang 的 Clean Architecture 實戰範例，具備高品質 UI/UX 設計。
 
 ## Current Phase
-Phase 2
+Phase 3
 
 ## Phases
 
@@ -19,19 +19,19 @@ Phase 2
 - [x] 確認應用類型：純網頁前端 PWA
 - [x] 研究參考專案：Kos Huang's Speaking Clock (Clean Architecture)
 - [x] 選擇技術堆疊：Astro + Vanilla JS（極輕量）
-- [ ] 設計 Clean Architecture 分層結構
-- [ ] 規劃 UI/UX 設計方向（現代簡約風格）
-- [ ] 定義 TDD 測試策略（Vitest 單元測試 + Playwright E2E）
-- [ ] 建立 Astro 專案結構
-- **Status:** in_progress
+- [x] 設計 Clean Architecture 分層結構
+- [x] 規劃 UI/UX 設計方向（現代簡約風格、shadcn/ui 美學）
+- [x] 定義 TDD 測試策略（Vitest 單元測試 + Playwright E2E）
+- [x] 建立 Astro 專案結構
+- **Status:** complete
 
 ### Phase 3: TDD Implementation - Core Features
-- [ ] 撰寫時鐘核心功能的測試（先寫測試！）
-- [ ] 實作時鐘時間顯示功能
-- [ ] 實作語音報時功能
-- [ ] 實作使用者設定功能（語言、語速、報時頻率）
-- [ ] 執行測試確保所有測試通過
-- **Status:** pending
+- [x] 撰寫時鐘核心功能的測試（先寫測試！）
+- [x] 實作時鐘時間顯示功能
+- [x] 實作語音報時功能
+- [x] 實作使用者設定功能（語言、語速、報時頻率）
+- [ ] 執行測試確保所有測試通過（本地測試 OK，CI 待驗證）
+- **Status:** in_progress
 
 ### Phase 4: UI/UX Implementation
 - [ ] 設計並實作主畫面介面

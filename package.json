@@ -13,13 +13,16 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage"
   },
-  "dependencies": {
-    "astro": "^5.16.14"
-  },
   "devDependencies": {
-    "@astrojs/check": "^0.9.4",
+    "@vitejs/plugin-react": "^5.1.2",
     "@vitest/ui": "^3.0.7",
     "typescript": "^5.9.2",
+    "vite": "^7.3.1",
     "vitest": "^3.0.7"
+  },
+  "dependencies": {
+    "astro": "^5.16.14",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
   }
 }

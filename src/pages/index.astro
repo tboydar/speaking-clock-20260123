@@ -70,6 +70,287 @@ import '../styles/global.css';
       </footer>
     </div>
 
-    <script type="module" src="../scripts/main.ts"></script>
+    <script>
+      // ============================================================
+      // DOMAIN LAYER - Entities (型別定義，JSDoc 形式)
+      // ============================================================
+
+      /**
+       * @typedef {Object} ClockSettings
+       * @property {string} language - 語言代碼 (如 'zh-TW', 'en-US')
+       * @property {number} voiceRate - 語速 (0.1-10)
+       * @property {number} voiceVolume - 音量 (0-1)
+       * @property {number} announceInterval - 報時間隔（分鐘）
+       * @property {boolean} isEnabled - 是否啟用
+       */
+
+      // ============================================================
+      // DOMAIN LAYER - Use Cases
+      // ============================================================
+
+      class SpeakTimeUseCase {
+        constructor(speechSynthesizer, timeRepository) {
+          this.speechSynthesizer = speechSynthesizer;
+          this.timeRepository = timeRepository;
+        }
+
+        async execute(settings) {
+          if (!settings.isEnabled) {
+            return;
+          }
+
+          const currentTime = this.timeRepository.getCurrentTime();
+          const timeText = this.timeRepository.formatTime(currentTime, '12h');
+          const speechText = this.buildSpeechText(timeText, settings.language);
+
+          await this.speechSynthesizer.speak(
+            speechText,
+            settings.language,
+            settings.voiceRate,
+            settings.voiceVolume
+          );
+        }
+
+        buildSpeechText(time, language) {
+          if (language.startsWith('zh')) {
+            return `現在時間是 ${time}`;
+          }
+          return `The time is ${time}`;
+        }
+      }
+
+      // ============================================================
+      // INFRASTRUCTURE LAYER - Adapters
+      // ============================================================
+
+      class BrowserSpeechSynthesizer {
+        constructor() {
+          this.synth = window.speechSynthesis;
+        }
+
+        async speak(text, language, rate, volume) {
+          return new Promise((resolve, reject) => {
+            this.synth.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = language;
+            utterance.rate = rate;
+            utterance.volume = volume;
+
+            // 嘗試選擇台灣中文女生語音
+            const voices = this.synth.getVoices();
+            const zhTWVoices = voices.filter(v => v.lang === 'zh-TW' || v.lang === 'zh_TW');
+
+            // 優先選擇女聲（通常名稱包含 "Female" 或 "女"）
+            const femaleVoice = zhTWVoices.find(v =>
+              v.name.includes('Female') ||
+              v.name.includes('女') ||
+              v.name.includes('Meijia') ||
+              v.name.includes('Ting-Ting')
+            );
+
+            if (femaleVoice) {
+              utterance.voice = femaleVoice;
+            } else if (zhTWVoices.length > 0) {
+              utterance.voice = zhTWVoices[0];
+            }
+
+            utterance.onend = () => resolve();
+            utterance.onerror = (event) => reject(new Error(`Speech error: ${event.error}`));
+
+            this.synth.speak(utterance);
+          });
+        }
+
+        getAvailableVoices() {
+          return this.synth.getVoices().map((voice) => ({
+            name: voice.name,
+            lang: voice.lang,
+          }));
+        }
+      }
+
+      class SystemTimeRepository {
+        getCurrentTime() {
+          return new Date();
+        }
+
+        formatTime(date, format) {
+          const hours = date.getHours();
+          const minutes = date.getMinutes();
+          const seconds = date.getSeconds();
+
+          if (format === '24h') {
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+          }
+
+          const period = hours >= 12 ? 'PM' : 'AM';
+          const displayHours = hours % 12 || 12;
+
+          return `${String(displayHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} ${period}`;
+        }
+      }
+
+      const DEFAULT_SETTINGS = {
+        language: 'zh-TW',
+        voiceRate: 1,
+        voiceVolume: 1,
+        announceInterval: 30,
+        isEnabled: true,
+      };
+
+      class LocalStorageSettingsRepository {
+        constructor() {
+          this.STORAGE_KEY = 'speaking-clock-settings';
+        }
+
+        async getSettings() {
+          if (typeof window === 'undefined') {
+            return DEFAULT_SETTINGS;
+          }
+
+          try {
+            const stored = localStorage.getItem(this.STORAGE_KEY);
+            if (stored) {
+              return { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
+            }
+          } catch (error) {
+            console.error('Failed to load settings:', error);
+          }
+
+          return DEFAULT_SETTINGS;
+        }
+
+        async saveSettings(settings) {
+          if (typeof window === 'undefined') {
+            return;
+          }
+
+          try {
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(settings));
+          } catch (error) {
+            console.error('Failed to save settings:', error);
+          }
+        }
+      }
+
+      // ============================================================
+      // PRESENTATION LAYER - UI Logic
+      // ============================================================
+
+      class SpeakingClockApp {
+        constructor() {
+          // Initialize dependencies (Dependency Injection)
+          this.settingsRepo = new LocalStorageSettingsRepository();
+          this.timeRepo = new SystemTimeRepository();
+          this.speechSynth = new BrowserSpeechSynthesizer();
+          this.speakTimeUseCase = new SpeakTimeUseCase(this.speechSynth, this.timeRepo);
+
+          // Get DOM elements
+          this.clockEl = document.getElementById('clock');
+          this.periodEl = document.getElementById('period');
+          this.speakBtn = document.getElementById('speak-btn');
+          this.settingsBtn = document.getElementById('settings-btn');
+          this.settingsPanel = document.getElementById('settings-panel');
+          this.saveSettingsBtn = document.getElementById('save-settings');
+
+          this.languageSelect = document.getElementById('language');
+          this.voiceRateInput = document.getElementById('voice-rate');
+          this.voiceRateValue = document.getElementById('voice-rate-value');
+          this.voiceVolumeInput = document.getElementById('voice-volume');
+          this.voiceVolumeValue = document.getElementById('voice-volume-value');
+          this.announceIntervalInput = document.getElementById('announce-interval');
+          this.enabledCheckbox = document.getElementById('enabled');
+
+          this.timer = null;
+        }
+
+        async init() {
+          // Load and apply settings
+          const settings = await this.settingsRepo.getSettings();
+          this.applySettings(settings);
+
+          // Start clock
+          this.startClock();
+
+          // Setup event listeners
+          this.setupEventListeners();
+          this.setupSettingsListeners();
+        }
+
+        startClock() {
+          const updateClock = () => {
+            const now = this.timeRepo.getCurrentTime();
+            const timeStr = this.timeRepo.formatTime(now, '12h');
+            const [time, period] = timeStr.split(' ');
+
+            this.clockEl.textContent = time;
+            this.periodEl.textContent = period;
+          };
+
+          updateClock();
+          this.timer = setInterval(updateClock, 1000);
+        }
+
+        setupEventListeners() {
+          this.speakBtn.addEventListener('click', async () => {
+            const settings = await this.settingsRepo.getSettings();
+            await this.speakTimeUseCase.execute(settings);
+          });
+
+          this.settingsBtn.addEventListener('click', () => {
+            this.settingsPanel.classList.toggle('hidden');
+          });
+
+          this.saveSettingsBtn.addEventListener('click', async () => {
+            const settings = this.getSettingsFromUI();
+            await this.settingsRepo.saveSettings(settings);
+            this.settingsPanel.classList.add('hidden');
+
+            // Show feedback
+            this.saveSettingsBtn.textContent = '已儲存！';
+            setTimeout(() => {
+              this.saveSettingsBtn.textContent = '儲存設定';
+            }, 1500);
+          });
+        }
+
+        setupSettingsListeners() {
+          this.voiceRateInput.addEventListener('input', () => {
+            this.voiceRateValue.textContent = this.voiceRateInput.value;
+          });
+
+          this.voiceVolumeInput.addEventListener('input', () => {
+            this.voiceVolumeValue.textContent = this.voiceVolumeInput.value;
+          });
+        }
+
+        applySettings(settings) {
+          this.languageSelect.value = settings.language;
+          this.voiceRateInput.value = settings.voiceRate.toString();
+          this.voiceRateValue.textContent = settings.voiceRate.toString();
+          this.voiceVolumeInput.value = settings.voiceVolume.toString();
+          this.voiceVolumeValue.textContent = settings.voiceVolume.toString();
+          this.announceIntervalInput.value = settings.announceInterval.toString();
+          this.enabledCheckbox.checked = settings.isEnabled;
+        }
+
+        getSettingsFromUI() {
+          return {
+            language: this.languageSelect.value,
+            voiceRate: parseFloat(this.voiceRateInput.value),
+            voiceVolume: parseFloat(this.voiceVolumeInput.value),
+            announceInterval: parseInt(this.announceIntervalInput.value),
+            isEnabled: this.enabledCheckbox.checked,
+          };
+        }
+      }
+
+      // Initialize app when DOM is ready
+      document.addEventListener('DOMContentLoaded', () => {
+        const app = new SpeakingClockApp();
+        app.init();
+      });
+    </script>
   </body>
 </html>

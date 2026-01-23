@@ -1,0 +1,25 @@
+{
+  "name": "speaking-clock-20260123",
+  "type": "module",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "astro": "^5.16.14"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@vitest/ui": "^3.0.7",
+    "typescript": "^5.9.2",
+    "vitest": "^3.0.7"
+  }
+}

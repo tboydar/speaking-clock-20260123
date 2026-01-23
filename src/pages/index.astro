@@ -39,6 +39,45 @@ import '../styles/global.css';
           <span id="status-text">自動報時已關閉</span>
         </div>
 
+        <!-- Todo Reminders Section -->
+        <section class="todo-section">
+          <div class="todo-header">
+            <h2>⏰ 待辦提醒</h2>
+            <p class="todo-subtitle">設定時間，到點會語音提醒直到關閉</p>
+          </div>
+
+          <div class="todo-input-group">
+            <input
+              type="time"
+              id="todo-time"
+              class="todo-time-input"
+            />
+            <input
+              type="text"
+              id="todo-input"
+              class="todo-input"
+              placeholder="輸入提醒內容..."
+              maxlength="100"
+            />
+            <button id="add-todo-btn" class="btn-add-todo" aria-label="新增提醒">
+              <span>+</span>
+            </button>
+          </div>
+
+          <ul id="todo-list" class="todo-list">
+            <!-- Reminder items will be rendered here -->
+          </ul>
+
+          <!-- Active reminder alert -->
+          <div id="reminder-alert" class="reminder-alert hidden">
+            <div class="reminder-alert-content">
+              <span class="reminder-alert-icon">🔔</span>
+              <span id="reminder-alert-text">提醒內容</span>
+            </div>
+            <button id="dismiss-reminder-btn" class="btn btn-primary">關閉提醒</button>
+          </div>
+        </section>
+
         <section id="settings-panel" class="settings-panel hidden">
           <h2>設定</h2>
           <div class="setting-group">
@@ -205,6 +244,84 @@ import '../styles/global.css';
         isEnabled: true,
       };
 
+      // ============================================================
+      // DOMAIN LAYER - Reminder Entity & Repository
+      // ============================================================
+
+      /**
+       * @typedef {Object} Reminder
+       * @property {string} id - 唯一識別碼
+       * @property {string} time - 提醒時間 (HH:MM)
+       * @property {string} text - 提醒內容
+       * @property {boolean} isRinging - 是否正在響鈴
+       * @property {boolean} completed - 是否已完成
+       */
+
+      class ReminderRepository {
+        constructor() {
+          this.STORAGE_KEY = 'speaking-clock-reminders';
+        }
+
+        getReminders() {
+          try {
+            const stored = localStorage.getItem(this.STORAGE_KEY);
+            if (stored) {
+              return JSON.parse(stored);
+            }
+          } catch (error) {
+            console.error('Failed to load reminders:', error);
+          }
+          return [];
+        }
+
+        saveReminders(reminders) {
+          try {
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(reminders));
+          } catch (error) {
+            console.error('Failed to save reminders:', error);
+          }
+        }
+
+        addReminder(time, text) {
+          const reminders = this.getReminders();
+          const newReminder = {
+            id: Date.now().toString(),
+            time,
+            text,
+            isRinging: false,
+            completed: false,
+          };
+          reminders.push(newReminder);
+          this.saveReminders(reminders);
+          return newReminder;
+        }
+
+        updateReminder(id, updates) {
+          const reminders = this.getReminders();
+          const index = reminders.findIndex(r => r.id === id);
+          if (index !== -1) {
+            reminders[index] = { ...reminders[index], ...updates };
+            this.saveReminders(reminders);
+            return reminders[index];
+          }
+          return null;
+        }
+
+        deleteReminder(id) {
+          const reminders = this.getReminders();
+          const filtered = reminders.filter(r => r.id !== id);
+          this.saveReminders(filtered);
+        }
+
+        dismissReminder(id) {
+          return this.updateReminder(id, { isRinging: false, completed: true });
+        }
+
+        setRinging(id, isRinging) {
+          return this.updateReminder(id, { isRinging });
+        }
+      }
+
       class LocalStorageSettingsRepository {
         constructor() {
           this.STORAGE_KEY = 'speaking-clock-settings';
@@ -251,6 +368,7 @@ import '../styles/global.css';
           this.timeRepo = new SystemTimeRepository();
           this.speechSynth = new BrowserSpeechSynthesizer();
           this.speakTimeUseCase = new SpeakTimeUseCase(this.speechSynth, this.timeRepo);
+          this.reminderRepo = new ReminderRepository();
 
           // Get DOM elements
           this.clockEl = document.getElementById('clock');
@@ -270,10 +388,23 @@ import '../styles/global.css';
 
           this.timer = null;
           this.autoAnnounceTimer = null;
+          this.reminderCheckTimer = null;
+          this.activeReminderTimer = null;
 
           // Auto-announce status elements
           this.statusEl = document.getElementById('auto-announce-status');
           this.statusTextEl = document.getElementById('status-text');
+
+          // Reminder elements
+          this.todoTimeInput = document.getElementById('todo-time');
+          this.todoInput = document.getElementById('todo-input');
+          this.addTodoBtn = document.getElementById('add-todo-btn');
+          this.todoList = document.getElementById('todo-list');
+          this.reminderAlert = document.getElementById('reminder-alert');
+          this.reminderAlertText = document.getElementById('reminder-alert-text');
+          this.dismissReminderBtn = document.getElementById('dismiss-reminder-btn');
+
+          this.currentRingingReminder = null;
         }
 
         async init() {
@@ -290,6 +421,11 @@ import '../styles/global.css';
           // Setup event listeners
           this.setupEventListeners();
           this.setupSettingsListeners();
+
+          // Initialize reminders
+          this.renderReminders();
+          this.setupReminderListeners();
+          this.startReminderChecker();
         }
 
         startAutoAnnounce(settings) {
@@ -394,6 +530,224 @@ import '../styles/global.css';
             announceInterval: parseInt(this.announceIntervalInput.value),
             isEnabled: this.enabledCheckbox.checked,
           };
+        }
+
+        // ============================================================
+        // REMINDER METHODS
+        // ============================================================
+
+        setupReminderListeners() {
+          // Add reminder
+          this.addTodoBtn.addEventListener('click', () => this.addReminder());
+          this.todoInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.addReminder();
+          });
+
+          // Dismiss reminder
+          this.dismissReminderBtn.addEventListener('click', () => this.dismissActiveReminder());
+
+          // Set default time to next hour
+          const now = new Date();
+          const nextHour = new Date(now.getTime() + 60 * 60 * 1000);
+          this.todoTimeInput.value = `${String(nextHour.getHours()).padStart(2, '0')}:00`;
+        }
+
+        addReminder() {
+          const time = this.todoTimeInput.value;
+          const text = this.todoInput.value.trim();
+
+          if (!time || !text) {
+            this.todoInput.focus();
+            return;
+          }
+
+          this.reminderRepo.addReminder(time, text);
+          this.todoInput.value = '';
+          this.renderReminders();
+        }
+
+        renderReminders() {
+          const reminders = this.reminderRepo.getReminders();
+
+          // Clear existing content
+          while (this.todoList.firstChild) {
+            this.todoList.removeChild(this.todoList.firstChild);
+          }
+
+          if (reminders.length === 0) {
+            const emptyLi = document.createElement('li');
+            emptyLi.className = 'todo-empty';
+            emptyLi.textContent = '尚無提醒，新增一個吧！';
+            this.todoList.appendChild(emptyLi);
+            return;
+          }
+
+          // Sort by time, incomplete first
+          const sorted = [...reminders].sort((a, b) => {
+            if (a.completed !== b.completed) return a.completed ? 1 : -1;
+            return a.time.localeCompare(b.time);
+          });
+
+          sorted.forEach(reminder => {
+            const li = document.createElement('li');
+            li.className = `todo-item ${reminder.completed ? 'completed' : ''} ${reminder.isRinging ? 'ringing' : ''}`;
+            li.dataset.id = reminder.id;
+
+            // Time
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'todo-time';
+            timeSpan.textContent = reminder.time;
+            li.appendChild(timeSpan);
+
+            // Checkbox
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'todo-checkbox';
+            checkbox.checked = reminder.completed;
+            checkbox.addEventListener('change', () => {
+              this.reminderRepo.updateReminder(reminder.id, {
+                completed: checkbox.checked,
+                isRinging: false
+              });
+              if (this.currentRingingReminder?.id === reminder.id) {
+                this.stopActiveReminder();
+              }
+              this.renderReminders();
+            });
+            li.appendChild(checkbox);
+
+            // Text
+            const textSpan = document.createElement('span');
+            textSpan.className = 'todo-text';
+            textSpan.textContent = reminder.text;
+            li.appendChild(textSpan);
+
+            // Ringing badge
+            if (reminder.isRinging) {
+              const badge = document.createElement('span');
+              badge.className = 'todo-badge';
+              badge.textContent = '🔔 響鈴中';
+              li.appendChild(badge);
+            }
+
+            // Actions
+            const actions = document.createElement('div');
+            actions.className = 'todo-actions';
+
+            const editBtn = document.createElement('button');
+            editBtn.className = 'todo-action-btn edit';
+            editBtn.setAttribute('aria-label', '編輯');
+            editBtn.textContent = '✏️';
+            editBtn.addEventListener('click', () => this.editReminder(reminder.id));
+            actions.appendChild(editBtn);
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'todo-action-btn delete';
+            deleteBtn.setAttribute('aria-label', '刪除');
+            deleteBtn.textContent = '🗑️';
+            deleteBtn.addEventListener('click', () => {
+              if (this.currentRingingReminder?.id === reminder.id) {
+                this.stopActiveReminder();
+              }
+              this.reminderRepo.deleteReminder(reminder.id);
+              this.renderReminders();
+            });
+            actions.appendChild(deleteBtn);
+
+            li.appendChild(actions);
+            this.todoList.appendChild(li);
+          });
+        }
+
+        editReminder(id) {
+          const reminders = this.reminderRepo.getReminders();
+          const reminder = reminders.find(r => r.id === id);
+          if (!reminder) return;
+
+          const newText = prompt('修改提醒內容：', reminder.text);
+          if (newText !== null && newText.trim()) {
+            this.reminderRepo.updateReminder(id, { text: newText.trim() });
+            this.renderReminders();
+          }
+        }
+
+        startReminderChecker() {
+          // Check reminders every 30 seconds
+          this.reminderCheckTimer = setInterval(() => {
+            this.checkReminders();
+          }, 30000);
+
+          // Also check immediately
+          this.checkReminders();
+        }
+
+        checkReminders() {
+          const now = new Date();
+          const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+          const reminders = this.reminderRepo.getReminders();
+
+          for (const reminder of reminders) {
+            if (reminder.completed) continue;
+
+            // Check if time matches and not already ringing
+            if (reminder.time === currentTime && !reminder.isRinging) {
+              this.triggerReminder(reminder);
+              break; // Only trigger one at a time
+            }
+          }
+        }
+
+        async triggerReminder(reminder) {
+          // Mark as ringing
+          this.reminderRepo.setRinging(reminder.id, true);
+          this.currentRingingReminder = reminder;
+          this.renderReminders();
+
+          // Show alert
+          this.reminderAlert.classList.remove('hidden');
+          this.reminderAlertText.textContent = reminder.text;
+
+          // Speak the reminder
+          await this.speakReminder(reminder);
+
+          // Keep reminding every minute until dismissed
+          this.activeReminderTimer = setInterval(async () => {
+            if (this.currentRingingReminder) {
+              await this.speakReminder(this.currentRingingReminder);
+            }
+          }, 60000);
+        }
+
+        async speakReminder(reminder) {
+          const settings = await this.settingsRepo.getSettings();
+          const text = settings.language.startsWith('zh')
+            ? `提醒：${reminder.text}`
+            : `Reminder: ${reminder.text}`;
+
+          await this.speechSynth.speak(
+            text,
+            settings.language,
+            settings.voiceRate,
+            settings.voiceVolume
+          );
+        }
+
+        dismissActiveReminder() {
+          if (this.currentRingingReminder) {
+            this.reminderRepo.dismissReminder(this.currentRingingReminder.id);
+            this.stopActiveReminder();
+            this.renderReminders();
+          }
+        }
+
+        stopActiveReminder() {
+          if (this.activeReminderTimer) {
+            clearInterval(this.activeReminderTimer);
+            this.activeReminderTimer = null;
+          }
+          this.currentRingingReminder = null;
+          this.reminderAlert.classList.add('hidden');
         }
       }
 

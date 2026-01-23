@@ -34,6 +34,11 @@ import '../styles/global.css';
           </button>
         </section>
 
+        <div id="auto-announce-status" class="auto-announce-status">
+          <span class="indicator"></span>
+          <span id="status-text">自動報時已關閉</span>
+        </div>
+
         <section id="settings-panel" class="settings-panel hidden">
           <h2>設定</h2>
           <div class="setting-group">
@@ -264,6 +269,11 @@ import '../styles/global.css';
           this.enabledCheckbox = document.getElementById('enabled');
 
           this.timer = null;
+          this.autoAnnounceTimer = null;
+
+          // Auto-announce status elements
+          this.statusEl = document.getElementById('auto-announce-status');
+          this.statusTextEl = document.getElementById('status-text');
         }
 
         async init() {
@@ -274,9 +284,46 @@ import '../styles/global.css';
           // Start clock
           this.startClock();
 
+          // Start auto-announce if enabled
+          this.startAutoAnnounce(settings);
+
           // Setup event listeners
           this.setupEventListeners();
           this.setupSettingsListeners();
+        }
+
+        startAutoAnnounce(settings) {
+          // Clear existing timer
+          if (this.autoAnnounceTimer) {
+            clearInterval(this.autoAnnounceTimer);
+            this.autoAnnounceTimer = null;
+          }
+
+          if (!settings.isEnabled) {
+            this.updateAutoAnnounceStatus(false, 0);
+            return;
+          }
+
+          const intervalMs = settings.announceInterval * 60 * 1000;
+
+          this.autoAnnounceTimer = setInterval(async () => {
+            const currentSettings = await this.settingsRepo.getSettings();
+            if (currentSettings.isEnabled) {
+              await this.speakTimeUseCase.execute(currentSettings);
+            }
+          }, intervalMs);
+
+          this.updateAutoAnnounceStatus(true, settings.announceInterval);
+        }
+
+        updateAutoAnnounceStatus(active, intervalMinutes) {
+          if (active) {
+            this.statusEl.classList.add('active');
+            this.statusTextEl.textContent = `自動報時：每 ${intervalMinutes} 分鐘`;
+          } else {
+            this.statusEl.classList.remove('active');
+            this.statusTextEl.textContent = '自動報時已關閉';
+          }
         }
 
         startClock() {
@@ -307,6 +354,9 @@ import '../styles/global.css';
             const settings = this.getSettingsFromUI();
             await this.settingsRepo.saveSettings(settings);
             this.settingsPanel.classList.add('hidden');
+
+            // Restart auto-announce with new settings
+            this.startAutoAnnounce(settings);
 
             // Show feedback
             this.saveSettingsBtn.textContent = '已儲存！';

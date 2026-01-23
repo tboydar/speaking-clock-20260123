@@ -537,8 +537,57 @@ main {
   font-weight: bold;
 }
 
-.hidden {
-  display: none;
+/* Hidden with animation support */
+.settings-panel {
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+}
+
+.settings-panel.hidden {
+  opacity: 0;
+  transform: translateY(-20px);
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.settings-panel:not(.hidden) {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+}
+
+/* Auto-announce indicator */
+.auto-announce-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  background: rgba(139, 92, 246, 0.1);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.auto-announce-status.active {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.auto-announce-status .indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.auto-announce-status.active .indicator {
+  background: #22c55e;
+  animation: pulse-indicator 2s ease-in-out infinite;
+}
+
+@keyframes pulse-indicator {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
 /* Footer */

@@ -2,8 +2,11 @@
 node_modules/
 
 # Build outputs
-.dist/
+dist/
 .astro/
+
+# Playwright screenshots
+.playwright-mcp/
 
 # Environment files
 .env

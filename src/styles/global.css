@@ -182,7 +182,7 @@ main {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-2xl);
+  border-radius: 2rem;
   min-width: 350px;
   box-shadow:
     var(--shadow-elevated),
@@ -208,7 +208,7 @@ main {
   content: '';
   position: absolute;
   inset: -2px;
-  border-radius: var(--radius-2xl);
+  border-radius: 2rem;
   padding: 2px;
   background: linear-gradient(
     45deg,
